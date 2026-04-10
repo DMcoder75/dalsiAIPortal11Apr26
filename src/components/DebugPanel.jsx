@@ -76,3 +76,45 @@ export default function DebugPanel() {
             <button
               onClick={() => {
                 const recentLogs = logger.getRecentLogs(5)
+                console.log('Recent logs (last 5 min):', recentLogs)
+              }}
+              className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition"
+            >
+              Show Recent Logs
+            </button>
+            <button
+              onClick={() => {
+                logger.exportLogsAsJSON()
+              }}
+              className="w-full px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition"
+            >
+              Export as JSON
+            </button>
+            <button
+              onClick={() => {
+                logger.clearLogs()
+                alert('Logs cleared!')
+              }}
+              className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-medium transition"
+            >
+              Clear Logs
+            </button>
+          </div>
+
+          {/* Info */}
+          <div className="bg-gray-800 rounded p-2 text-xs text-gray-400 border border-gray-700">
+            <div className="mb-1 font-bold text-gray-300">Tips:</div>
+            <ul className="space-y-1">
+              <li>• Access logs via: <code className="bg-gray-900 px-1 rounded">window.__logger</code></li>
+              <li>• All console.log calls are captured</li>
+              <li>• Logs persist across page reloads</li>
+              <li>• Max 1000 logs stored</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <LogViewer isOpen={isLogViewerOpen} onClose={() => setIsLogViewerOpen(false)} />
+    </>
+  )
+}

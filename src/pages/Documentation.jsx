@@ -275,3 +275,37 @@ const client = new DalsiAI({
 
 const result = await client
   .analyzeText('Your text here');
+
+console.log(result);`}
+                  </pre>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg p-8 text-center border border-primary/30">
+              <h2 className="text-3xl font-bold text-foreground mb-4">Need more help?</h2>
+              <p className="text-muted-foreground mb-6">
+                Check out our support center or community forum for additional resources and assistance.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button className="bg-primary hover:bg-primary/90">
+                  Visit Support Center
+                </Button>
+                <Button variant="outline">
+                  Join Community
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      
+      <Footer />
+    </div>
+  )
+}

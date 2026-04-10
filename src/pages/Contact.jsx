@@ -19,6 +19,21 @@ export default function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault()
     // Handle form submission here
+    console.log('Form submitted:', formData)
+    alert('Thank you for your message! We will get back to you soon.')
+  }
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground dark"
+         style={{
+           background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
            minHeight: '100vh'
          }}>
       <Navigation />
@@ -52,15 +67,43 @@ export default function Contact() {
         {/* Contact Information */}
         <section className="py-16 bg-card/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-card rounded-lg p-8 border border-border hover:border-primary/50 transition-all duration-300 hover:scale-105 max-w-md mx-auto mb-16">
-              <div className="flex items-center mb-6">
-                <Mail className="h-8 w-8 text-primary mr-4" />
-                <h3 className="text-xl font-bold text-foreground">General Inquiries</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+              
+              {/* General Contact */}
+              <div className="bg-card rounded-lg p-8 border border-border hover:border-primary/50 transition-all duration-300 hover:scale-105">
+                <div className="flex items-center mb-6">
+                  <Mail className="h-8 w-8 text-primary mr-4" />
+                  <h3 className="text-xl font-bold text-foreground">General Inquiries</h3>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  For general questions about our AI solutions and services.
+                </p>
+                <p className="text-primary font-medium text-lg">info@neodalsi.com</p>
               </div>
-              <p className="text-muted-foreground mb-4">
-                For general questions about our AI solutions and services.
-              </p>
-              <p className="text-primary font-medium text-lg">info@neodalsi.com</p>
+
+              {/* Phone Contact */}
+              <div className="bg-card rounded-lg p-8 border border-border hover:border-accent/50 transition-all duration-300 hover:scale-105">
+                <div className="flex items-center mb-6">
+                  <Phone className="h-8 w-8 text-accent mr-4" />
+                  <h3 className="text-xl font-bold text-foreground">Phone Support</h3>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Speak directly with our AI specialists and technical experts.
+                </p>
+                <p className="text-accent font-medium text-lg">+1 (555) 123-4567</p>
+              </div>
+
+              {/* Office Location */}
+              <div className="bg-card rounded-lg p-8 border border-border hover:border-destructive/50 transition-all duration-300 hover:scale-105">
+                <div className="flex items-center mb-6">
+                  <MapPin className="h-8 w-8 text-destructive mr-4" />
+                  <h3 className="text-xl font-bold text-foreground">Office Location</h3>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Visit us at our AI innovation hub for in-person consultations.
+                </p>
+                <p className="text-destructive font-medium">AI Innovation Hub<br />Tech Valley</p>
+              </div>
             </div>
 
             {/* Business Hours */}

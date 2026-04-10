@@ -19,6 +19,88 @@ export const fetchGuestLimit = async () => {
 
     if (data && data.limits && data.limits.queries_per_day) {
       GUEST_LIMIT = data.limits.queries_per_day
+      console.log('✅ Dynamic Guest Limit set to:', GUEST_LIMIT)
+    } else {
+      console.warn('⚠️ Could not find queries_per_day in limits for Free plan. Keeping default GUEST_LIMIT:', GUEST_LIMIT)
+    }
+  } catch (error) {
+    console.error('❌ Error fetching guest limit from DB:', error.message)
+    // Keep default limit if fetch fails
+  }
+}
+
+/**
+ * Fetch subscription plan limits for a specific tier
+ */
+export const fetchPlanLimits = async (tierName) => {
+  try {
+    const { data, error } = await supabase
+      .from('subscription_plans')
+      .select('limits, name')
+      .eq('name', tierName)
+      .single()
+
+    if (error) throw error
+
+    if (data && data.limits) {
+      console.log(`✅ Plan limits for ${tierName}:`, data.limits)
+      return data.limits
+    }
+    
+    return null
+  } catch (error) {
+    console.error(`❌ Error fetching plan limits for ${tierName}:`, error.message)
+    return null
+  }
+}
+
+const GUEST_USAGE_KEY = 'dalsi_guest_messages'
+const GUEST_LAST_USED_KEY = 'dalsi_guest_last_used'
+
+/**
+ * Get guest message count from localStorage
+ */
+export const getGuestMessageCount = () => {
+  try {
+    const count = localStorage.getItem(GUEST_USAGE_KEY)
+    return count ? parseInt(count, 10) : 0
+  } catch (error) {
+    console.error('Error reading guest usage:', error)
+    return 0
+  }
+}
+
+/**
+ * Increment guest message count
+ */
+export const incrementGuestMessageCount = () => {
+  try {
+    const current = getGuestMessageCount()
+    localStorage.setItem(GUEST_USAGE_KEY, (current + 1).toString())
+    localStorage.setItem(GUEST_LAST_USED_KEY, new Date().toDateString())
+    return current + 1
+  } catch (error) {
+    console.error('Error incrementing guest usage:', error)
+    return current
+  }
+}
+
+/**
+ * Clear guest message count (call after login)
+ */
+export const clearGuestMessageCount = () => {
+  try {
+    localStorage.removeItem(GUEST_USAGE_KEY)
+    localStorage.removeItem(GUEST_LAST_USED_KEY)
+  } catch (error) {
+    console.error('Error clearing guest usage:', error)
+  }
+}
+
+/**
+ * Check if guest can send message
+ */
+export const getGuestLimit = () => GUEST_LIMIT;
 
 export const canGuestSendMessage = () => {
   return getGuestMessageCount() < GUEST_LIMIT

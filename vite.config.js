@@ -7,7 +7,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    allowedHosts: 'all' // Bypass host check for sandbox environment
+    allowedHosts: true,
+    cors: true,
   },
   resolve: {
     alias: {

@@ -382,9 +382,18 @@ export default function Experience() {
         lookupResult: conversationChatIdsRef.current[sessionId]
       })
       
-      // CRITICAL FIX: Always use stored chat_id from backend response if available
-      // This ensures we use the actual chat_id created by backend, not the initial guest_user_id
-      const storedChatId = conversationChatIdsRef.current[sessionId] || activeChat?.id
+      // CRITICAL FIX: Only pass chat_id when it is a valid UUID.
+      // The backend stores chat_id as a PostgreSQL UUID column — sending a dict, object,
+      // or freeform string (e.g. "guest-123") causes a 500 'invalid input syntax for type uuid'.
+      // Guest sessions do NOT have a real UUID until the backend creates one and returns it.
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      const toValidUUID = (v) => {
+        if (!v) return null
+        const s = typeof v === 'object' ? (v.id || '') : String(v)
+        return UUID_RE.test(s.trim()) ? s.trim() : null
+      }
+      const rawChatId = conversationChatIdsRef.current[sessionId] || activeChat?.id
+      const storedChatId = toValidUUID(rawChatId)  // null if not a real UUID
       
       logger.debug('🔍 [EXPERIENCE] Chat ID being sent to backend:', {
         isContinuation,
@@ -944,3 +953,229 @@ export default function Experience() {
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(msg.content)
+                            console.log('Copied to clipboard')
+                          }}
+                          className="absolute bottom-0 right-0 p-1.5 rounded opacity-50 hover:opacity-100 transition-opacity bg-primary-foreground/10 hover:bg-primary-foreground/20"
+                          title="Copy message"
+                        >
+                          <svg className="w-4 h-4 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <AIModeResponseFormatter
+                        mode={msg.mode || 'chat'}
+                        response={msg.content}
+                        references={msg.references}
+                        followups={msg.followups}
+                        onFollowupClick={(followupQuestion) => {
+                          logger.info('🔗 [EXPERIENCE] Followup clicked:', followupQuestion)
+                          
+                          // Use smart continuation detection for followup
+                          const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null
+                          const lastAIContent = lastMsg?.role === 'assistant' ? lastMsg.content : ''
+                          const followupAnalysis = detectContinuation(followupQuestion, lastAIContent)
+                          
+                          logger.info('📊 [EXPERIENCE] Followup analysis:', {
+                            question: followupQuestion,
+                            isContinuation: followupAnalysis.isContinuation,
+                            confidence: followupAnalysis.confidence
+                          })
+                          
+                          // Set input and send
+                          setInputValue(followupQuestion)
+                          setTimeout(() => {
+                            // Simulate sending by calling handleSendMessage
+                            const sendBtn = document.querySelector('[data-send-followup="true"]')
+                            if (sendBtn) {
+                              sendBtn.click()
+                            }
+                          }, 50)
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <div className="flex justify-start">
+                  <div className="bg-card border border-border px-6 py-4 rounded-lg">
+                    <div className="flex gap-2">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t border-border bg-background/50 backdrop-blur p-3 md:p-6">
+          <div className="max-w-4xl mx-auto">
+            {!user && (
+              <div className="mb-4 p-4 bg-primary/10 border border-primary/30 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-purple-100">Guest: {guestMessageCount}/{guestLimit} messages</p>
+                  <p className="text-xs text-muted-foreground">Sign in to get unlimited messages</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={e => setInputValue(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                  placeholder="Ask anything... (Shift + Enter for new line)"
+                  className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-colors"
+                />
+
+              </div>
+              <button
+                onClick={handleSendMessage}
+                disabled={loading || !inputValue.trim()}
+                data-send-followup="true"
+                className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold p-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-lg"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Token: {tokenCount} / 128K</span>
+              <span>DalSiAI can make mistakes. Consider checking important information.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div className={`${rightSidebarOpen ? 'w-64' : 'w-0'} bg-card border-l border-border flex flex-col transition-all duration-300 overflow-hidden hidden lg:flex`}>
+        <div className="p-6 border-b border-border flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-purple-100">Quick Actions</h3>
+          <button
+            onClick={() => setRightSidebarOpen(false)}
+            className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Templates */}
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Templates</p>
+            <div className="space-y-3">
+              {templates.map(template => (
+                <button
+                  key={template.id}
+                  onClick={() => {
+                    if (template.id === 'email') setShowEmailWriterModal(true)
+                    if (template.id === 'summary') setShowSummaryModal(true)
+                    if (template.id === 'translator') setShowTranslatorModal(true)
+                    if (template.id === 'tutor') setShowTutorModal(true)
+                  }}
+                  className="w-full p-4 bg-card hover:bg-card/80 rounded-lg text-left transition-colors group border border-border hover:border-primary/50"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">{template.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{template.name}</p>
+                      <p className="text-xs text-muted-foreground">{template.description}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Integrations */}
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Integrations</p>
+            <div className="space-y-3">
+              {integrations.map(integration => (
+                <button
+                  key={integration.id}
+                  className="w-full p-4 bg-card hover:bg-card/80 rounded-lg text-left transition-colors group border border-border hover:border-primary/50"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{integration.icon}</span>
+                      <div>
+                        <p className="text-sm font-medium text-purple-100">{integration.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {integration.connected ? (
+                            <span className="text-green-500">Connected</span>
+                          ) : (
+                            <span>Not connected</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    {integration.connected && (
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* Email Writer Modal */}
+      <EmailWriterModal
+        isOpen={showEmailWriterModal}
+        onClose={() => setShowEmailWriterModal(false)}
+        user={user}
+      />
+
+      {/* Summary Modal */}
+      <SummaryModal
+        isOpen={showSummaryModal}
+        onClose={() => setShowSummaryModal(false)}
+        user={user}
+      />
+
+      {/* Translator Modal */}
+      <TranslatorModal
+        isOpen={showTranslatorModal}
+        onClose={() => setShowTranslatorModal(false)}
+        user={user}
+      />
+
+      {/* Tutor Modal */}
+      <TutorModal
+        isOpen={showTutorModal}
+        onClose={() => setShowTutorModal(false)}
+        user={user}
+      />
+
+      {/* Edit Conversation Modal */}
+      <EditConversationModal
+        isOpen={showEditModal}
+        conversation={editingConversation}
+        onClose={() => {
+          setShowEditModal(false)
+          setEditingConversation(null)
+        }}
+        onSave={handleSaveConversationTitle}
+        isLoading={isUpdatingTitle}
+      />
+    </div>
+  )
+}

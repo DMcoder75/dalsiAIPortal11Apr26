@@ -34,8 +34,46 @@ export async function checkFriction(userId, tier, messageCount) {
     })
 
     if (!response.ok) {
+      console.error('Friction API call failed with status:', response.status)
+      // Fallback: If API fails, assume no friction to avoid blocking the user
+      return { should_show: false, friction_data: null }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('Error calling friction API:', error)
+    // Fallback: If network fails, assume no friction
+    return { should_show: false, friction_data: null }
+  }
+}
+
+/**
+ * Logs the user's action on the friction UI (dismissed, accepted, or upgraded).
+ * @param {string} eventId - The unique ID of the friction event.
+ * @param {('dismissed'|'accepted'|'upgraded')} action - The action taken by the user.
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function logFrictionAction(eventId, action) {
+  const url = `${API_BASE_URL}/api/friction/action`
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': API_KEY,
+      },
+      body: JSON.stringify({
+        event_id: eventId,
+        action: action,
+      }),
     })
 
     const data = await response.json()
     return { success: response.ok, message: data.message || 'Action logged' }
   } catch (error) {
+    console.error('Error logging friction action:', error)
+    return { success: false, message: 'Failed to log action' }
+  }
+}

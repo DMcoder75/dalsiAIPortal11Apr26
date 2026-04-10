@@ -13,8 +13,20 @@ export async function fetchSubscriptionPlans() {
       .order('tier_level', { ascending: true })
 
     if (error) {
+      console.error('Error fetching subscription plans:', error.message)
+      return null
+    }
+
+    // Parse JSON fields (features and limits)
+    const plans = data.map(plan => ({
+      ...plan,
+      features: typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features,
       limits: typeof plan.limits === 'string' ? JSON.parse(plan.limits) : plan.limits,
     }))
 
     return plans
   } catch (e) {
+    console.error('Unexpected error in fetchSubscriptionPlans:', e)
+    return null
+  }
+}

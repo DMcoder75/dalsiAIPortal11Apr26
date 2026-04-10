@@ -19,6 +19,21 @@ const API_BASE_URL = 'https://api.neodalsi.com'
 const conversationEndpoints = new Map()
 
 /**
+ * Validate that a value is a proper UUID string.
+ * The backend stores chat_id as a UUID column — sending any other format causes a 500.
+ * @param {*} value
+ * @returns {string|null} The UUID string if valid, otherwise null
+ */
+const toValidUUID = (value) => {
+  if (!value) return null
+  // If it's an object, try to extract the .id field
+  const str = typeof value === 'object' ? (value.id || '') : String(value)
+  // UUID v4 pattern
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  return UUID_RE.test(str.trim()) ? str.trim() : null
+}
+
+/**
  * Detect if a prompt is detailed/complex and should get longer response
  * Uses intelligent complexity detection system
  * @param {string} message - User prompt
@@ -105,14 +120,19 @@ export const generateAIResponse = async (message, options = {}) => {
     const authKey = await getApiKeyForRequest()
     const headers = buildHeaders(authKey)
 
+    // Only include chat_id when it is a valid UUID — the backend column is UUID type
+    // and will throw 500 for any other format (dict, freeform string, etc.)
+    const validChatId = toValidUUID(options.chat_id)
+    const validSessionId = toValidUUID(session_id) || (typeof session_id === 'string' ? session_id : null)
+
     // Build request body
     const body = {
       message,
       mode,
       use_history,
       response_length,
-      ...(session_id && { session_id }),
-      ...(options.chat_id && { chat_id: options.chat_id }),
+      ...(validSessionId && { session_id: validSessionId }),
+      ...(validChatId && { chat_id: validChatId }),
       ...(options.complexity_level && { complexity_level: options.complexity_level })
     }
 
@@ -180,13 +200,17 @@ export const generateHealthcareResponse = async (message, options = {}) => {
     const authKey = await getApiKeyForRequest()
     const headers = buildHeaders(authKey)
 
+    // Only include chat_id when it is a valid UUID — the backend column is UUID type
+    const validChatId = toValidUUID(options.chat_id)
+    const validSessionId = toValidUUID(session_id) || (typeof session_id === 'string' ? session_id : null)
+
     // Build request body
     const body = {
       message,
       mode,
       use_history,
-      ...(session_id && { session_id }),
-      ...(options.chat_id && { chat_id: options.chat_id }),
+      ...(validSessionId && { session_id: validSessionId }),
+      ...(validChatId && { chat_id: validChatId }),
       ...(options.response_length && { response_length: options.response_length }),
       ...(options.complexity_level && { complexity_level: options.complexity_level })
     }
@@ -253,13 +277,17 @@ export const generateEducationResponse = async (message, options = {}) => {
     const authKey = await getApiKeyForRequest()
     const headers = buildHeaders(authKey)
 
+    // Only include chat_id when it is a valid UUID — the backend column is UUID type
+    const validChatId = toValidUUID(options.chat_id)
+    const validSessionId = toValidUUID(session_id) || (typeof session_id === 'string' ? session_id : null)
+
     // Build request body for education endpoint
     const body = {
       message,
       mode,
       use_history,
-      ...(session_id && { session_id }),
-      ...(options.chat_id && { chat_id: options.chat_id }),
+      ...(validSessionId && { session_id: validSessionId }),
+      ...(validChatId && { chat_id: validChatId }),
       ...(options.response_length && { response_length: options.response_length }),
       ...(options.complexity_level && { complexity_level: options.complexity_level })
     }
