@@ -73,6 +73,9 @@ export default function Navigation() {
      <a href="/products/chatbot-builder" className="block px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded">
       Chatbot Builder
      </a>
+     <a href="/vertoai" className="block px-3 py-1.5 text-sm text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded font-medium">
+      Verto AI — WhatsApp
+     </a>
      </div>
     </div>
     </div>

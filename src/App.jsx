@@ -34,6 +34,7 @@ import Partners from './pages/Partners'
 import SubscriptionSettings from './pages/SubscriptionSettings'
 import GmailCallback from './pages/GmailCallback'
 import Experience from './pages/Experience'
+import VertoAI from './pages/VertoAI'
 
 // Import admin components
 import AdminLogin from './pages/admin/AdminLogin'
@@ -71,6 +72,7 @@ function App() {
           <Route path="/auth/gmail/callback" element={<GmailCallback />} />
           <Route path="/experience" element={<Experience />} />
           <Route path="/chat" element={<Experience />} />
+          <Route path="/vertoai" element={<VertoAI />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
