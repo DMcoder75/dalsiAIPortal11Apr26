@@ -6,7 +6,7 @@
 import logger from './logger'
 import { supabase } from './supabase'
 
-const API_BASE = 'https://api.neodalsi.com'
+const API_BASE = '/proxy'
 
 /**
  * Delete conversation with cascade delete of all messages

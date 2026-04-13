@@ -2,7 +2,7 @@
  * JWT Authentication Service
  * Integrates with NeoDalsi API for JWT-based authentication
  * 
- * API Base URL: https://api.neodalsi.com
+ * API Base URL: /proxy
  * Endpoints:
  * - POST /api/auth/login - Login and get JWT token
  * - POST /api/auth/verify - Verify JWT token
@@ -14,7 +14,7 @@
 
 import logger from './logger'
 
-const API_BASE_URL = 'https://api.neodalsi.com';
+const API_BASE_URL = '/proxy';
 
 /**
  * Login user and get JWT token

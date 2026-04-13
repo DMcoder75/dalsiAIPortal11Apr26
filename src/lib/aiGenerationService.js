@@ -13,7 +13,7 @@ import logger from './logger'
 import { getApiKeyForRequest } from './authService'
 import { detectComplexity, getGenerationParams, logComplexityAnalysis } from './complexityDetector'
 
-const API_BASE_URL = 'https://api.neodalsi.com'
+const API_BASE_URL = '/proxy'
 
 // Store conversation endpoint types to maintain consistency
 const conversationEndpoints = new Map()

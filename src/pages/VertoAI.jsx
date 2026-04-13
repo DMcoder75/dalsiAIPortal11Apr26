@@ -526,7 +526,7 @@ export default function VertoAI() {
         enable_search:     form.enable_search,
         session_minutes:   Number(form.session_minutes) || 8
       }
-      const res = await fetch('https://api.neodalsi.com/vertosession/session/create', {
+      const res = await fetch('/proxy/vertosession/session/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

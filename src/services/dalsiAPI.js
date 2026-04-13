@@ -2,7 +2,7 @@
 class DalSiAPIService {
   constructor() {
     // New unified API endpoint
-    this.apiEndpoint = 'https://api.neodalsi.com'
+    this.apiEndpoint = '/proxy'
     this.defaultMaxLength = 800
     this.freeUsageLimit = 2 // Free interactions before subscription required
     

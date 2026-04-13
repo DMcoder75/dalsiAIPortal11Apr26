@@ -6,7 +6,7 @@
 
 import logger from './logger'
 
-const API_BASE = 'https://api.neodalsi.com'
+const API_BASE = '/proxy'
 
 /**
  * Migrate all guest data to registered user

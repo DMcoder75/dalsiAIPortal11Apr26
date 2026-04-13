@@ -1,10 +1,10 @@
 /**
  * DalSi API Client Service
  * Handles all API calls to the new DalSiAI API endpoint
- * Base URL: https://api.neodalsi.com
+ * Base URL: /proxy
  */
 
-const API_BASE_URL = process.env.REACT_APP_DALSI_API_URL || 'https://api.neodalsi.com';
+const API_BASE_URL = process.env.REACT_APP_DALSI_API_URL || '/proxy';
 
 class DalSiApiClient {
   constructor() {

@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 // Since we don't have a backend proxy, we'll use a placeholder and assume
 // the actual API call is made securely.
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.neodalsi.com'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/proxy'
 const API_KEY = 'demo_key_UID1' // Placeholder from the integration guide
 
 /**

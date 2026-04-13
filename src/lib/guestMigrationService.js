@@ -7,7 +7,7 @@ import logger from './logger'
 import { getAllGuestConversations, clearAllGuestConversations } from './guestConversationService'
 import { createConversation, saveMessage } from './conversationServiceEnhanced'
 
-const API_BASE = 'https://api.neodalsi.com'
+const API_BASE = '/proxy'
 
 /**
  * Migrate all guest conversations to registered user

@@ -4,7 +4,7 @@
  * Includes caching for conversations and messages
  */
 
-const API_BASE_URL = 'https://api.neodalsi.com'
+const API_BASE_URL = '/proxy'
 
 // Cache storage
 const cache = {

@@ -6,7 +6,7 @@
 
 import logger from './logger'
 
-const API_BASE_URL = 'https://api.neodalsi.com'
+const API_BASE_URL = '/proxy'
 
 /**
  * Generate unique session ID for browser fingerprinting

@@ -2,7 +2,7 @@
 
 // API endpoints for DalSi AI models
 // New unified API endpoint for all AI models
-const API_URL = 'https://api.neodalsi.com'
+const API_URL = '/proxy'
 
 import { getJWT } from './jwtAuth'
 import { cleanTextForDisplay, hasProblematicCharacters } from './textCleaner'
