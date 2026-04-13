@@ -96,6 +96,13 @@ function LandingStep({ consentChecked, setConsentChecked, onNext }) {
           <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-green-500/10 rounded-full blur-3xl" />
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="flex justify-center mb-6">
+            <img
+              src="/VertoLogo.png"
+              alt="Verto AI Logo"
+              className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl"
+            />
+          </div>
           <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <MessageCircle className="w-4 h-4" />
             WhatsApp AI Concierge
