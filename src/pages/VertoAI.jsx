@@ -303,77 +303,33 @@ function FormStep({ form, onChange, onSubmit, submitting, error, onBack }) {
               </div>
             </div>
 
-            {/* Agent configuration */}
-            <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Agent configuration</p>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Agent name</label>
-                <input
-                  type="text"
-                  name="agent_name"
-                  value={form.agent_name}
-                  onChange={onChange}
-                  placeholder="e.g. Verto, Aria, Max"
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500/40"
-                />
+            {/* Agent configuration — display only */}
+            <div className="bg-card border border-border rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your AI agent</p>
+                <span className="text-xs bg-green-500/10 text-green-400 border border-green-500/20 px-2.5 py-0.5 rounded-full font-medium">Pre-configured</span>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">
-                  Agent persona <span className="text-muted-foreground font-normal">(optional)</span>
-                </label>
-                <textarea
-                  name="agent_persona"
-                  value={form.agent_persona}
-                  onChange={onChange}
-                  rows={3}
-                  placeholder="Describe how your agent should behave, e.g. 'Friendly and professional barista who knows our full menu and can take orders.'"
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500/40 resize-none"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-background border border-border rounded-lg px-4 py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5">Agent name</p>
+                  <p className="text-sm font-semibold text-foreground">Verto AI</p>
+                </div>
+                <div className="bg-background border border-border rounded-lg px-4 py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5">Demo duration</p>
+                  <p className="text-sm font-semibold text-foreground flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-green-400" /> 8 minutes</p>
+                </div>
+                <div className="bg-background border border-border rounded-lg px-4 py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5">Escalation policy</p>
+                  <p className="text-sm font-semibold text-foreground">Standard</p>
+                </div>
+                <div className="bg-background border border-border rounded-lg px-4 py-3">
+                  <p className="text-xs text-muted-foreground mb-0.5">Agent persona</p>
+                  <p className="text-sm font-semibold text-foreground">Domain-specific</p>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Escalation policy</label>
-                <select
-                  name="escalation_policy"
-                  value={form.escalation_policy}
-                  onChange={onChange}
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-500/40"
-                >
-                  {ESCALATION_POLICIES.map(p => (
-                    <option key={p.value} value={p.value}>{p.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">
-                  <Clock className="inline w-3.5 h-3.5 mr-1 text-muted-foreground" />
-                  Demo duration
-                </label>
-                <select
-                  name="session_minutes"
-                  value={form.session_minutes}
-                  onChange={onChange}
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-500/40"
-                >
-                  <option value={5}>5 minutes</option>
-                  <option value={8}>8 minutes (default)</option>
-                  <option value={10}>10 minutes</option>
-                  <option value={15}>15 minutes</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-3 bg-background border border-border rounded-lg px-4 py-3">
-                <input
-                  type="checkbox"
-                  id="enable_search"
-                  name="enable_search"
-                  checked={form.enable_search}
-                  onChange={onChange}
-                  className="w-4 h-4 accent-green-500 cursor-pointer"
-                />
-                <label htmlFor="enable_search" className="text-sm cursor-pointer">
-                  <span className="font-medium">Enable online search</span>
-                  <span className="text-muted-foreground ml-1">— agent can look up live information when needed</span>
-                </label>
-              </div>
+              <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                The agent persona is automatically tailored to your selected industry using our curated knowledge base. No configuration needed.
+              </p>
             </div>
 
             {error && (
@@ -539,7 +495,7 @@ export default function VertoAI() {
     business_name:     '',
     location:          '',
     language:          'en',
-    agent_name:        'Verto',
+    agent_name:        'Verto AI',
     agent_persona:     '',
     escalation_policy: 'standard',
     enable_search:     false,
