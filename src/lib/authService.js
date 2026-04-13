@@ -42,7 +42,7 @@ export const getGuestApiKey = async () => {
     logger.debug('📑 [AUTH_SERVICE] Stored session ID in localStorage:', sessionId)
 
     // Call guest key endpoint
-    const response = await fetch(`${API_BASE_URL}/api/auth/guest-key`, {
+    const response = await fetch(`${API_BASE}/api/auth/guest-key`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export const verifyJWT = async (token) => {
   try {
     logger.info('🔍 [AUTH_SERVICE] Verifying JWT token...')
 
-    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+    const response = await fetch(`${API_BASE}/api/auth/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export const loginUser = async (email, password) => {
   try {
     logger.info('🔐 [AUTH_SERVICE] Logging in user:', email)
 
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

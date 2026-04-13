@@ -139,7 +139,7 @@ export const generateAIResponse = async (message, options = {}) => {
     logger.debug('📤 [AI_SERVICE] Request body:', body)
 
     // Make API call
-    const response = await fetch(`${API_BASE_URL}/generate`, {
+    const response = await fetch(`${API_BASE}/generate`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body)
@@ -218,7 +218,7 @@ export const generateHealthcareResponse = async (message, options = {}) => {
     logger.debug('📤 [AI_SERVICE] Healthcare request body:', body)
 
     // Make API call
-    const response = await fetch(`${API_BASE_URL}/healthcare/generate`, {
+    const response = await fetch(`${API_BASE}/healthcare/generate`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body)
@@ -294,7 +294,7 @@ export const generateEducationResponse = async (message, options = {}) => {
     logger.debug('📤 [AI_SERVICE] Education request body:', body)
 
     // Make API call
-    const response = await fetch(`${API_BASE_URL}/edu/generate`, {
+    const response = await fetch(`${API_BASE}/edu/generate`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body)
@@ -347,7 +347,7 @@ export const getConversationTree = async (session_id) => {
     const headers = buildHeaders(authKey)
 
     // Make API call
-    const response = await fetch(`${API_BASE_URL}/api/conversation/tree?session_id=${session_id}`, {
+    const response = await fetch(`${API_BASE}/api/conversation/tree?session_id=${session_id}`, {
       method: 'GET',
       headers
     })

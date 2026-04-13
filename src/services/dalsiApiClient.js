@@ -4,7 +4,7 @@
  * Base URL: /proxy
  */
 
-const API_BASE_URL = process.env.REACT_APP_DALSI_API_URL || '/proxy';
+const API_BASE_URL = (import.meta.env.DEV ? '/proxy' : 'https://us-central1-innate-temple-337717.cloudfunctions.net/apiProxy');
 
 class DalSiApiClient {
   constructor() {

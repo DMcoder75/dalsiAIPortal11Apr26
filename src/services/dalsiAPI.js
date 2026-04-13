@@ -2,7 +2,7 @@
 class DalSiAPIService {
   constructor() {
     // New unified API endpoint
-    this.apiEndpoint = '/proxy'
+    this.apiEndpoint = (import.meta.env.DEV ? '/proxy' : 'https://us-central1-innate-temple-337717.cloudfunctions.net/apiProxy')
     this.defaultMaxLength = 800
     this.freeUsageLimit = 2 // Free interactions before subscription required
     

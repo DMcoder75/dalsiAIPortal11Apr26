@@ -26,7 +26,7 @@ import API_BASE from './apiConfig';
 export const loginWithJWT = async (email, password) => {
   try {
     
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export const verifyJWT = async (token = null) => {
       return { valid: false, user: null };
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+    const response = await fetch(`${API_BASE}/api/auth/verify`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${jwtToken}`,
@@ -125,7 +125,7 @@ export const refreshJWT = async () => {
       return { success: false, error: 'No token found' };
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    const response = await fetch(`${API_BASE}/api/auth/refresh`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${currentToken}`,
@@ -337,7 +337,7 @@ export const signupWithGmail = async () => {
     const redirectUri = `${window.location.origin}/auth/gmail/callback`;
     
     // Call Gmail signup endpoint
-    const response = await fetch(`${API_BASE_URL}/api/auth/gmail/signup`, {
+    const response = await fetch(`${API_BASE}/api/auth/gmail/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -384,7 +384,7 @@ export const loginWithGmail = async () => {
     const redirectUri = `${window.location.origin}/auth/gmail/callback`;
     
     // Call Gmail login endpoint
-    const response = await fetch(`${API_BASE_URL}/api/auth/gmail/login`, {
+    const response = await fetch(`${API_BASE}/api/auth/gmail/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -454,7 +454,7 @@ export const handleGmailCallback = async (code, state) => {
     };
     localStorage.setItem('gmail_callback_request', JSON.stringify(requestBody));
     
-    const response = await fetch(`${API_BASE_URL}/api/auth/gmail/callback`, {
+    const response = await fetch(`${API_BASE}/api/auth/gmail/callback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

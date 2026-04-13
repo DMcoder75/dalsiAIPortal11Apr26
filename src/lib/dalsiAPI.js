@@ -88,7 +88,7 @@ export const checkModelAccess = async (modelId, usageCount, subscription) => {
  */
 const getModelEndpoint = (modelId) => {
   // All models use the same API endpoint
-  return `${API_URL}/v1/text/generate`
+  return `${API_BASE}/v1/text/generate`
 }
 
 /**
@@ -96,7 +96,7 @@ const getModelEndpoint = (modelId) => {
  */
 export const checkAPIHealth = async (modelId) => {
   try {
-    const response = await fetch(`${API_URL}/v1/health`, {
+    const response = await fetch(`${API_BASE}/v1/health`, {
       method: 'GET',
       headers: getAuthHeaders()
     })

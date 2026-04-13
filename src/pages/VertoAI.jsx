@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import API_BASE from '../lib/apiConfig'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { Card, CardContent } from '../components/ui/card'
@@ -533,7 +534,7 @@ export default function VertoAI() {
         enable_search:     form.enable_search,
         session_minutes:   Number(form.session_minutes) || 8
       }
-      const res = await fetch('/proxy/vertosession/session/create', {
+      const res = await fetch(`${API_BASE}/vertosession/session/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

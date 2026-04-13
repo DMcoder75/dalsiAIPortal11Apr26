@@ -21,7 +21,7 @@ export const fetchConversations = async (token) => {
   try {
     console.log('[CHAT_API] Fetching conversations with token:', token ? 'present' : 'missing')
     
-    const response = await fetch(`${API_BASE_URL}/api/chats`, {
+    const response = await fetch(`${API_BASE}/api/chats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export const fetchConversationMessages = async (chatId, token) => {
       return cache.messages[chatId]
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/chats/${chatId}/messages`, {
+    const response = await fetch(`${API_BASE}/api/chats/${chatId}/messages`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ export const fetchConversationMessages = async (chatId, token) => {
  */
 export const deleteConversationAPI = async (chatId, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chats/${chatId}`, {
+    const response = await fetch(`${API_BASE}/api/chats/${chatId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
