@@ -7,7 +7,7 @@ import logger from './logger'
 import { getAllGuestConversations, clearAllGuestConversations } from './guestConversationService'
 import { createConversation, saveMessage } from './conversationServiceEnhanced'
 
-const API_BASE = '/proxy'
+import API_BASE from './apiConfig';
 
 /**
  * Migrate all guest conversations to registered user

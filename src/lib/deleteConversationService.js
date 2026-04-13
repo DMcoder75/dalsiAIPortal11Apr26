@@ -6,7 +6,7 @@
 import logger from './logger'
 import { supabase } from './supabase'
 
-const API_BASE = '/proxy'
+import API_BASE from './apiConfig';
 
 /**
  * Delete conversation with cascade delete of all messages

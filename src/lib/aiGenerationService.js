@@ -13,7 +13,7 @@ import logger from './logger'
 import { getApiKeyForRequest } from './authService'
 import { detectComplexity, getGenerationParams, logComplexityAnalysis } from './complexityDetector'
 
-const API_BASE_URL = '/proxy'
+import API_BASE from './apiConfig';
 
 // Store conversation endpoint types to maintain consistency
 const conversationEndpoints = new Map()

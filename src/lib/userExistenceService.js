@@ -5,7 +5,7 @@
 
 import logger from './logger'
 
-const API_BASE = '/proxy'
+import API_BASE from './apiConfig';
 
 /**
  * Check if user exists by email

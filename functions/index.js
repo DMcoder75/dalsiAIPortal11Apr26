@@ -1,10 +1,103 @@
 const functions = require('firebase-functions');
 const nodemailer = require('nodemailer');
-const cors = require('cors')({origin: true});
+const cors = require('cors')({
+  origin: [
+    'https://neodalsi.com',
+    'https://www.neodalsi.com',
+    'https://innate-temple-337717.web.app',
+    'https://innate-temple-337717.firebaseapp.com'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+  credentials: true
+});
+const https = require('https');
+const http = require('http');
+const { URL } = require('url');
 
 // Initialize Firebase Admin
 const admin = require('firebase-admin');
 admin.initializeApp();
+
+const DALSI_API_BASE = 'https://api.neodalsi.com';
+
+/**
+ * API Proxy — forwards all requests to api.neodalsi.com server-side
+ * Bypasses browser CORS restrictions for production use on neodalsi.com
+ * Usage: /apiProxy/<path>  e.g. /apiProxy/generate, /apiProxy/vertosession/session/create
+ */
+exports.apiProxy = functions
+  .runWith({ timeoutSeconds: 120, memory: '256MB' })
+  .https.onRequest((req, res) => {
+    cors(req, res, async () => {
+      if (req.method === 'OPTIONS') {
+        return res.status(204).send('');
+      }
+
+      try {
+        // Build the target URL: strip the /apiProxy prefix
+        const rawPath = req.path || '/';
+        const targetPath = rawPath.replace(/^\/apiProxy/, '') || '/';
+        const targetUrl = new URL(targetPath, DALSI_API_BASE);
+
+        // Forward query string
+        Object.entries(req.query || {}).forEach(([k, v]) => {
+          targetUrl.searchParams.set(k, v);
+        });
+
+        const isHttps = targetUrl.protocol === 'https:';
+        const lib = isHttps ? https : http;
+
+        const options = {
+          hostname: targetUrl.hostname,
+          port: targetUrl.port || (isHttps ? 443 : 80),
+          path: targetUrl.pathname + targetUrl.search,
+          method: req.method,
+          headers: {
+            'Content-Type': req.headers['content-type'] || 'application/json',
+            ...(req.headers['authorization'] && { 'Authorization': req.headers['authorization'] }),
+            ...(req.headers['x-api-key'] && { 'X-API-Key': req.headers['x-api-key'] }),
+            'User-Agent': 'DalsiPortal-Proxy/1.0'
+          }
+        };
+
+        const body = req.method !== 'GET' && req.method !== 'HEAD'
+          ? JSON.stringify(req.body)
+          : null;
+
+        if (body) {
+          options.headers['Content-Length'] = Buffer.byteLength(body);
+        }
+
+        const proxyReq = lib.request(options, (proxyRes) => {
+          res.status(proxyRes.statusCode);
+          // Forward safe response headers
+          ['content-type', 'cache-control', 'x-request-id'].forEach(h => {
+            if (proxyRes.headers[h]) res.setHeader(h, proxyRes.headers[h]);
+          });
+
+          const chunks = [];
+          proxyRes.on('data', chunk => chunks.push(chunk));
+          proxyRes.on('end', () => {
+            const responseBody = Buffer.concat(chunks);
+            res.end(responseBody);
+          });
+        });
+
+        proxyReq.on('error', (err) => {
+          console.error('Proxy request error:', err.message);
+          res.status(502).json({ error: 'Proxy error', details: err.message });
+        });
+
+        if (body) proxyReq.write(body);
+        proxyReq.end();
+
+      } catch (err) {
+        console.error('apiProxy error:', err.message);
+        res.status(500).json({ error: 'Internal proxy error', details: err.message });
+      }
+    });
+  });
 
 /**
  * Send verification email to new users

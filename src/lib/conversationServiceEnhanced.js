@@ -6,7 +6,7 @@
 
 import logger from './logger'
 
-const API_BASE = '/proxy'
+import API_BASE from './apiConfig';
 
 /**
  * Get all conversations for authenticated user

@@ -6,7 +6,7 @@
 
 import logger from './logger'
 
-const API_BASE_URL = '/proxy'
+import API_BASE from './apiConfig';
 
 /**
  * Generate unique session ID for browser fingerprinting

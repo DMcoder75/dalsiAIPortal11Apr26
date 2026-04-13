@@ -6,7 +6,7 @@
 
 import logger from './logger'
 
-const API_BASE = '/proxy'
+import API_BASE from './apiConfig';
 
 /**
  * Migrate all guest data to registered user

@@ -14,7 +14,7 @@
 
 import logger from './logger'
 
-const API_BASE_URL = '/proxy';
+import API_BASE from './apiConfig';
 
 /**
  * Login user and get JWT token
