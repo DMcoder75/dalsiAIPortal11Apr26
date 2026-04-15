@@ -170,10 +170,27 @@ function LandingStep({ consentChecked, setConsentChecked, onNext }) {
   )
 }
 
+// ─── Validators ─────────────────────────────────────────────────────────────
+const isValidEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim())
+const isValidPhone = v => /^\+[1-9]\d{6,14}$/.test(v.trim())
+
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 2 — Form
 // ─────────────────────────────────────────────────────────────────────────────
 function FormStep({ form, onChange, onSubmit, submitting, error, onBack }) {
+  const [touched, setTouched] = useState({ email: false, phone: false })
+
+  const emailError  = touched.email && form.email  && !isValidEmail(form.email)  ? 'Please enter a valid email address (e.g. rahul@company.com)' : ''
+  const phoneError  = touched.phone && form.phone  && !isValidPhone(form.phone)  ? 'Format: +[country code][number] with no spaces, e.g. +919822418118' : ''
+
+  const isFormValid =
+    form.name.trim() !== '' &&
+    isValidEmail(form.email) &&
+    isValidPhone(form.phone) &&
+    form.domain !== ''
+
+  const handleBlur = (e) => setTouched(t => ({ ...t, [e.target.name]: true }))
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Navigation />
@@ -226,10 +243,12 @@ function FormStep({ form, onChange, onSubmit, submitting, error, onBack }) {
                   name="email"
                   value={form.email}
                   onChange={onChange}
+                  onBlur={handleBlur}
                   required
                   placeholder="e.g. rahul@company.com"
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500/40"
+                  className={`w-full bg-background border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${emailError ? 'border-red-500 focus:ring-red-500/40' : 'border-border focus:ring-green-500/40'}`}
                 />
+                {emailError && <p className="text-xs text-red-400 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{emailError}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">
@@ -241,11 +260,15 @@ function FormStep({ form, onChange, onSubmit, submitting, error, onBack }) {
                   name="phone"
                   value={form.phone}
                   onChange={onChange}
+                  onBlur={handleBlur}
                   required
-                  placeholder="+61412345678 (include country code)"
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-green-500/40"
+                  placeholder="+919822418118"
+                  className={`w-full bg-background border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${phoneError ? 'border-red-500 focus:ring-red-500/40' : 'border-border focus:ring-green-500/40'}`}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Include country code, e.g. +61 for Australia, +1 for US</p>
+                {phoneError
+                  ? <p className="text-xs text-red-400 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{phoneError}</p>
+                  : <p className="text-xs text-muted-foreground mt-1">Start with + and country code, no spaces — e.g. +919822418118</p>
+                }
               </div>
             </div>
 
@@ -349,8 +372,8 @@ function FormStep({ form, onChange, onSubmit, submitting, error, onBack }) {
 
             <Button
               type="submit"
-              disabled={submitting}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 text-base gap-2"
+              disabled={submitting || !isFormValid}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 text-base gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Creating your session...</>
