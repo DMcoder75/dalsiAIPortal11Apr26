@@ -10,6 +10,10 @@ admin.initializeApp();
 
 const DALSI_API_BASE = 'https://api.neodalsi.com';
 
+// AI generation endpoints can take 45-90 seconds — use a generous socket timeout
+// so the proxy does not drop the connection before the backend finishes.
+const PROXY_SOCKET_TIMEOUT_MS = 300000; // 300 s
+
 const ALLOWED_ORIGINS = [
   'https://neodalsi.com',
   'https://www.neodalsi.com',
@@ -31,23 +35,17 @@ function setCorsHeaders(req, res) {
 }
 
 /**
- * API Proxy — true catch-all reverse proxy to api.neodalsi.com
+ * API Proxy — reverse proxy to api.neodalsi.com
  *
- * How path extraction works:
- *   - When called via Firebase Hosting rewrite (neodalsi.com/api/**):
- *       req.path = '/api/auth/guest-key'  (Firebase sets this correctly)
- *       x-forwarded-url header also contains the original path
- *   - When called directly (cloudfunctions.net/apiProxy/api/**):
- *       req.path = '/api/auth/guest-key'  (Express routing)
- *
- * The function strips any leading /apiProxy prefix and forwards the rest
- * to https://api.neodalsi.com with the original method, headers, and body.
+ * Timeout is set to 540 s (max for Cloud Functions v1) so that slow AI
+ * generation endpoints (edu/generate, healthcare/generate) have enough
+ * time to respond without Cloudflare or Firebase killing the connection.
  *
  * Handles all routes:
- *   /generate, /edu/*, /healthcare/*, /api/*, /vertosession/*
+ *   /generate, /edu/**, /healthcare/**, /api/**, /vertosession/**
  */
 exports.apiProxy = functions
-  .runWith({ timeoutSeconds: 120, memory: '256MB' })
+  .runWith({ timeoutSeconds: 540, memory: '256MB' })
   .https.onRequest((req, res) => {
     setCorsHeaders(req, res);
 
@@ -64,7 +62,6 @@ exports.apiProxy = functions
       let targetPath;
 
       if (forwardedUrl) {
-        // x-forwarded-url may be a full URL or just a path
         try {
           const fwdParsed = new URL(forwardedUrl, 'https://neodalsi.com');
           targetPath = fwdParsed.pathname;
@@ -72,12 +69,11 @@ exports.apiProxy = functions
           targetPath = forwardedUrl.split('?')[0];
         }
       } else {
-        // Fallback: use req.path, strip /apiProxy prefix if present
         const rawPath = req.path || req.originalUrl || '/';
         targetPath = rawPath.replace(/^\/apiProxy/, '') || '/';
       }
 
-      console.log(`[apiProxy] ${req.method} ${targetPath} (fwd=${forwardedUrl})`);
+      console.log(`[apiProxy] ${req.method} ${targetPath}`);
 
       const targetUrl = new URL(targetPath, DALSI_API_BASE);
 
@@ -89,8 +85,7 @@ exports.apiProxy = functions
       const isHttps = targetUrl.protocol === 'https:';
       const lib = isHttps ? https : http;
 
-      // Serialize body correctly:
-      // Firebase body-parser already parsed JSON into req.body object.
+      // Serialize body — Firebase body-parser already parsed JSON into req.body.
       // Re-serialize only for non-GET/HEAD requests that have a body.
       let bodyBuffer = null;
       const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
@@ -106,6 +101,7 @@ exports.apiProxy = functions
         port: targetUrl.port || (isHttps ? 443 : 80),
         path: targetUrl.pathname + targetUrl.search,
         method: req.method,
+        timeout: PROXY_SOCKET_TIMEOUT_MS,
         headers: {
           'Content-Type': contentType,
           'Host': targetUrl.hostname,
@@ -134,9 +130,19 @@ exports.apiProxy = functions
         });
       });
 
+      proxyReq.on('timeout', () => {
+        console.error(`[apiProxy] Socket timeout after ${PROXY_SOCKET_TIMEOUT_MS}ms for ${targetUrl.pathname}`);
+        proxyReq.destroy();
+        if (!res.headersSent) {
+          res.status(504).json({ error: 'Gateway timeout', path: targetUrl.pathname });
+        }
+      });
+
       proxyReq.on('error', (err) => {
         console.error('[apiProxy] Request error:', err.message);
-        res.status(502).json({ error: 'Proxy error', details: err.message });
+        if (!res.headersSent) {
+          res.status(502).json({ error: 'Proxy error', details: err.message });
+        }
       });
 
       if (bodyBuffer) proxyReq.write(bodyBuffer);
@@ -144,105 +150,59 @@ exports.apiProxy = functions
 
     } catch (err) {
       console.error('[apiProxy] Internal error:', err.message);
-      res.status(500).json({ error: 'Internal proxy error', details: err.message });
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Internal proxy error', details: err.message });
+      }
     }
   });
 
 /**
  * Send verification email to new users
- * This is an HTTP function that accepts POST requests
- * NO AUTHENTICATION REQUIRED - allows unauthenticated calls for registration
  */
 const cors = require('cors')({origin: true});
 
 exports.sendVerificationEmail = functions.https.onRequest((req, res) => {
-  // Enable CORS
   cors(req, res, async () => {
-    // Only allow POST requests
     if (req.method !== 'POST') {
       return res.status(405).json({error: 'Method not allowed'});
     }
 
     try {
-      // Extract data from request body
       const { email, userId, firstName, verificationUrl } = req.body;
 
-      // Validate required fields
       if (!email || !userId || !verificationUrl) {
         return res.status(400).json({
           error: 'Missing required fields: email, userId, or verificationUrl'
         });
       }
 
-      // Email configuration - using hardcoded credentials for now
-      // TODO: Move to Firebase config or environment variables in production
       const emailUser = 'dalsiainoreply@gmail.com';
-      const emailPass = 'gubk utmj gsjh sbar'; // Gmail app password
+      const emailPass = 'gubk utmj gsjh sbar';
 
-      // Create nodemailer transporter
       const transporter = nodemailer.createTransport({
         service: 'gmail',
-        auth: {
-          user: emailUser,
-          pass: emailPass
-        }
+        auth: { user: emailUser, pass: emailPass }
       });
 
-      // Email HTML template
       const emailHtml = `
         <!DOCTYPE html>
         <html>
         <head>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            .header {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              padding: 30px;
-              text-align: center;
-              border-radius: 10px 10px 0 0;
-            }
-            .content {
-              background: #f9f9f9;
-              padding: 30px;
-              border-radius: 0 0 10px 10px;
-            }
-            .button {
-              display: inline-block;
-              padding: 15px 30px;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              text-decoration: none;
-              border-radius: 5px;
-              margin: 20px 0;
-              font-weight: bold;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 30px;
-              color: #666;
-              font-size: 12px;
-            }
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>Welcome to Dalsi AI! 🎉</h1>
-          </div>
+          <div class="header"><h1>Welcome to Dalsi AI! 🎉</h1></div>
           <div class="content">
             <p>Hi ${firstName || 'there'},</p>
             <p>Thank you for joining <strong>Dalsi AI & Automations</strong>! We're excited to have you on board.</p>
             <p>To complete your registration and activate your account, please verify your email address by clicking the button below:</p>
-            <div style="text-align: center;">
-              <a href="${verificationUrl}" class="button">Verify Email Address</a>
-            </div>
+            <div style="text-align: center;"><a href="${verificationUrl}" class="button">Verify Email Address</a></div>
             <p>Or copy and paste this link into your browser:</p>
             <p style="word-break: break-all; color: #667eea;">${verificationUrl}</p>
             <p><strong>Important:</strong> This verification link will expire in 24 hours for security reasons.</p>
@@ -257,7 +217,6 @@ exports.sendVerificationEmail = functions.https.onRequest((req, res) => {
         </html>
       `;
 
-      // Email options
       const mailOptions = {
         from: `"Dalsi AI" <${emailUser}>`,
         to: email,
@@ -265,14 +224,9 @@ exports.sendVerificationEmail = functions.https.onRequest((req, res) => {
         html: emailHtml
       };
 
-      // Send email
       const info = await transporter.sendMail(mailOptions);
-      
-      console.log('Verification email sent successfully:', {
-        messageId: info.messageId,
-        email: email,
-        userId: userId
-      });
+
+      console.log('Verification email sent:', { messageId: info.messageId, email, userId });
 
       return res.status(200).json({
         success: true,
