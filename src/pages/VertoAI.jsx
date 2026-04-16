@@ -181,7 +181,7 @@ function FormStep({ form, onChange, onSubmit, submitting, error, onBack }) {
   const [touched, setTouched] = useState({ email: false, phone: false })
 
   const emailError  = touched.email && form.email  && !isValidEmail(form.email)  ? 'Please enter a valid email address (e.g. rahul@company.com)' : ''
-  const phoneError  = touched.phone && form.phone  && !isValidPhone(form.phone)  ? 'Format: +[country code][number] with no spaces, e.g. +919822418118' : ''
+  const phoneError  = touched.phone && form.phone  && !isValidPhone(form.phone)  ? 'Format: +[country code][number] with no spaces, e.g. +15555555555' : ''
 
   const isFormValid =
     form.name.trim() !== '' &&
@@ -262,12 +262,12 @@ function FormStep({ form, onChange, onSubmit, submitting, error, onBack }) {
                   onChange={onChange}
                   onBlur={handleBlur}
                   required
-                  placeholder="+919822418118"
+                  placeholder="+15555555555"
                   className={`w-full bg-background border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${phoneError ? 'border-red-500 focus:ring-red-500/40' : 'border-border focus:ring-green-500/40'}`}
                 />
                 {phoneError
                   ? <p className="text-xs text-red-400 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{phoneError}</p>
-                  : <p className="text-xs text-muted-foreground mt-1">Start with + and country code, no spaces — e.g. +919822418118</p>
+                  : <p className="text-xs text-muted-foreground mt-1">Start with + and country code, no spaces — e.g. +15555555555</p>
                 }
               </div>
             </div>
@@ -494,9 +494,12 @@ function SuccessStep({ sessionData, onRestart }) {
             <Button onClick={onRestart} variant="outline" className="border-border hover:border-green-500/40">
               Start another session
             </Button>
-            <Button onClick={() => navigate('/experience')} className="bg-green-500 hover:bg-green-600 text-white gap-2">
+            <Button
+              onClick={() => window.open('https://wa.me/61468853945', '_blank')}
+              className="bg-green-500 hover:bg-green-600 text-white gap-2"
+            >
               <MessageCircle className="w-4 h-4" />
-              Try DalsiAI Chat
+              Start VertoAI Chat
             </Button>
           </div>
         </div>
